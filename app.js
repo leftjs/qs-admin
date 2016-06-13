@@ -8,9 +8,11 @@ var swig = require('swig')
 var mongoose = require('mongoose')
 var passport = require('passport')
 var LocalStrategy = require('passport-local').Strategy
+var WechatStrategy = require('passport-wechat').Strategy
 
 
 var routes = require('./routes/index');
+var agent = require('./routes/agent')
 
 var app = express();
 
@@ -43,11 +45,25 @@ app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
+app.use('/agent', agent)
 
 
 // passport config
 var Account = require('./models/account');
 passport.use(new LocalStrategy(Account.authenticate()));
+passport.use(new WechatStrategy({
+      appID: 'wx926e5c3031482d64',
+      name:'wechat',
+      appSecret: '248630d1718eab25774b5414f944d0f8',
+      client: 'web',
+      callbackURL: 'http://qs-admin/lefttjs.com/auth/wechat/callback',
+      scope: 'snsapi_userinfo',
+      state:'123123123'
+    },
+    function(accessToken, refreshToken, profile, done) {
+      return done(err,profile);
+    }
+));
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
